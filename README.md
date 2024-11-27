@@ -153,8 +153,9 @@ See also this link for more details in [turtlebot4 manual](https://turtlebot.git
 - In a new terminal, save the map with ```ros2 run nav2_map_server map_saver_cli -f map```. You should see the map saved in the folder where you are currently located. You should have 2 files, one .pgm, and one .yaml.
 
 In simulation with TurtleBot3:
-- Follow the instructions in `tbt3Simulation.md` to run the robot in simulation 
+- Follow the instructions in `tbt3Simulation.md` to run the robot in simulation
 - In second terminal, run the slam: ```ros2 launch slam_toolbox online_sync_launch.py``` this will open RViz and you should see the base of the map.
+  - If RViz doesn't come up automatically, start rviz in a new terminal: ```ros2 launch turtlebot3_bringup rviz2.launch.py```, then to bring up the map, click the 'Add' button at the bottom left of the RViz window, select the 'By topic' tab, and click on 'Map' under the '\map' topic to add the map visualization to rviz.
 - In a third terminal, run the teleop node: ```ros2 run turtlebot3_teleop teleop_keyboard```.
 - Save the map with ```ros2 run nav2_map_server map_saver_cli -f map```. You should see the map saved in the folder where you are currently located. You should have 2 files, one .pgm, and one .yaml.
 
