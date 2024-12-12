@@ -27,18 +27,25 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.spatial import KDTree
-from mapUtilities import *
+# from mapUtilities import *
 
 # Parameters of PRM
 N_SAMPLE = 800  # number of sample_points
 N_KNN = 10  # number of edge from one sampled point (one node)
 MAX_EDGE_LEN = 3  # Maximum edge length, in [m]
 
+# Original Parameters of PRM
+# N_SAMPLE = 800  # number of sample_points
+# N_KNN = 10  # number of edge from one sampled point (one node)
+# MAX_EDGE_LEN = 3  # Maximum edge length, in [m]
+
+RESOLUTION = 0.05  # [m/cell]
+
 show_plot = True
 
 # When set to false, you can run this script stand-alone, it will use the information specified in main
 # When set to true, you are expected to use this with the stack and the specified map
-use_map = True
+use_map = False
 
 def prm_graph(start, goal, obstacles_list, robot_radius, *, rng=None, m_utilities=None):
     """
@@ -64,8 +71,8 @@ def prm_graph(start, goal, obstacles_list, robot_radius, *, rng=None, m_utilitie
         # [Part 2] TODO The radius of the robot and the maximum edge lengths are given in [m], but the map is given in cell positions.
         # Therefore, when using the map, the radius and edge length need to be adjusted for the resolution of the cell positions
         # Hint: in the map utilities there is the resolution stored
-        robot_radius = ...
-        max_edge_len = ...
+        robot_radius = int(robot_radius / RESOLUTION)
+        max_edge_len = int(max_edge_len / RESOLUTION)
 
     # Get sample data
     sample_points = generate_sample_points(start, goal,
@@ -154,18 +161,31 @@ def generate_sample_points(start, goal, rr, obstacles_list, obstacle_kd_tree, rn
     # NOTE: by using rng, the created random samples may not be integers. 
     # When using the map, the samples should be indices of the cells of the costmap, therefore remember to round them to integer values.
     # Hint: you may leverage on the query function of KDTree to find the nearest neighbors
-
     sample_x, sample_y = [], []
 
     while len(sample_x) <= N_SAMPLE:
-        ...
+        # Random Sampling
+        tx = (rng.random()/RESOLUTION)
+        ty = (rng.random()/RESOLUTION)
+
+        # Check if the sample is within the min and max obstacle coordinates
+        if tx < min(ox) or tx > max(ox) or ty < min(oy) or ty > max(oy):
+            continue
+
+        # Check if the sample is in collision with an obstacle
+        if is_collision(tx, ty, -1, -1, rr, obstacle_kd_tree, MAX_EDGE_LEN):
+            continue
+
+        sample_x.append(int(tx/RESOLUTION))
+        sample_y.append(int(ty/RESOLUTION))
     
     # [Part 2] TODO Add also the start and goal to the samples so that they are connected to the roadmap
-    ...
+    sample_x.append(int(sx/RESOLUTION))
+    sample_y.append(int(sy/RESOLUTION))
 
     return [sample_x, sample_y]
 
-# Check whethere there is a possible collision between two nodes, used for generating the roadmap after sampling the points.
+# Check whether there is a possible collision between two nodes, used for generating the roadmap after sampling the points.
 def is_collision(sx, sy, gx, gy, rr, obstacle_kd_tree, max_edge_len):
     """
     Check collisions
@@ -184,10 +204,16 @@ def is_collision(sx, sy, gx, gy, rr, obstacle_kd_tree, max_edge_len):
     If max_edge_len is exceeded, also return true as if a collision is verified.
     """
 
-    # [Part 2] TODO Check where there would be a collision with an obstacle between two nodes at sx,sy and gx,gy, and wether the edge between the two nodes is greater than max_edge_len
+    # [Part 2] TODO Check where there would be a collision with an obstacle between two nodes at sx,sy and gx,gy, and whether the edge between the two nodes is greater than max_edge_len
     # Hint: you may leverage on the query function of KDTree
     
-    ...
+    # Case for determining if a single sample point is in collision with an obstacle. Used in generate_sample_points()
+    if (gx < 0 and gy < 0):
+        if not obstacle_kd_tree.query_ball_point([sx, sy], 0):
+            return True
+    else: 
+        # Case for determining if an edge between two sample points is in collision with an obstacle. Used in generate_road_map()
+        ...
 
     return False  # No collision
 
@@ -205,11 +231,11 @@ def generate_road_map(sample_points, rr, obstacle_kd_tree, max_edge_len, m_utili
     :param m_utilities: optional, needed when using costmap
     :return road_map
 
-    Create a roadmap that is a list of sublists of tuples.
-    Each sublist is a list of tuples corresponding to the indices of the nodes to which the sample point has an edge connection.
+    Create a roadmap that is a list of sublists.
+    Each sublist is a list of tlists corresponding to the indices of the nodes to which the sample point has an edge connection.
     e.g. for N_KNN=3:
-    [[(i1, j1), (i2, j2), (i3, j3)], [(), (), ()], [(), (), ()], ...]
-    Indicates that sample_point[0] is connected to 3 nodes, at indices (i1,j1), (i2,j2), (i3,j3).
+    [i, j, k], [.. , .., ..], [.. , .., ..], ...]
+    Indicates that sample_point[0] is connected to 3 nodes, at positions i, j, k.
     """
 
     sample_x = sample_points[0]
