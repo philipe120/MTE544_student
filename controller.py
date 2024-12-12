@@ -15,8 +15,8 @@ class controller:
     
     def __init__(self, klp=0.2, klv=0.2, kli=0.2, kap=0.2, kav=0.2, kai=0.2):
         
-        self.PID_linear=PID_ctrl(PID, klp, klv, kli, filename_="linear.csv")
-        self.PID_angular=PID_ctrl(PID, kap, kav, kai, filename_="angular.csv")
+        self.PID_linear=PID_ctrl(PID, klp, klv, kli, filename_="Log_Files/linear.csv")
+        self.PID_angular=PID_ctrl(PID, kap, kav, kai, filename_="Log_Files/angular.csv")
 
     
     def vel_request(self, pose, goal, status):
@@ -28,8 +28,8 @@ class controller:
         linear_vel=self.PID_linear.update([e_lin, pose[3]], status)
         angular_vel=self.PID_angular.update([e_ang, pose[3]], status) 
 
-        linear_vel = 0.5 if linear_vel > 1.0 else linear_vel
-        angular_vel= 0.5 if angular_vel > 1.0 else angular_vel
+        linear_vel = 0.22 if linear_vel > 0.22 else linear_vel
+        angular_vel= 2.84 if angular_vel > 2.84 else angular_vel
 
 
         return linear_vel, angular_vel
@@ -56,8 +56,8 @@ class trajectoryController(controller):
         linear_vel=self.PID_linear.update([e_lin, pose[3]], status)
         angular_vel=self.PID_angular.update([e_ang, pose[3]], status) 
 
-        linear_vel = 0.1 if linear_vel > 0.1 else linear_vel
-        angular_vel= 0.5 if angular_vel > 0.5 else angular_vel
+        linear_vel = 0.22 if linear_vel > 0.22 else linear_vel
+        angular_vel= 2.84 if angular_vel > 2.84 else angular_vel
 
 
         return linear_vel, angular_vel

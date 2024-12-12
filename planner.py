@@ -4,6 +4,7 @@ from probabilistic_road_map import *
 import time
 
 POINT_PLANNER=0; TRAJECTORY_PLANNER=1; ASTAR_PLANNER=2; PRM_PLANNER=3
+ROBOT_RADIUS = 0.105 # [m]
 
 class planner:
     def __init__(self, type_, mapName="room"):
@@ -47,7 +48,15 @@ class planner:
         # [Part 3] TODO Use the PRM and search_PRM to generate the path
         # Hint: see the example of the ASTAR case below, there is no scaling factor for PRM
         if type == PRM_PLANNER:
-            ...
+            start_time = time.time()
+
+            sample_points, road_map = prm_graph(startPose, endPose, self.obstaclesListCell, ROBOT_RADIUS)
+
+            path_ = search_PRM(sample_points, road_map, startPose, endPose)
+
+            end_time = time.time()
+
+            print(f"the time took for prm + a_star calculation was {end_time - start_time}")
 
         elif type == ASTAR_PLANNER: # This is the same planner you should have implemented for Lab4
             scale_factor = 4 # Depending on resolution, this can be smaller or larger
