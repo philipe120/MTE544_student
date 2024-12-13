@@ -1,6 +1,8 @@
 from mapUtilities import *
+import matplotlib.pyplot as plt
 from a_star import *
 from probabilistic_road_map import *
+import rclpy
 import time
 
 POINT_PLANNER=0; TRAJECTORY_PLANNER=1; ASTAR_PLANNER=2; PRM_PLANNER=3
@@ -50,12 +52,11 @@ class planner:
         if type == PRM_PLANNER:
             start_time = time.time()
 
-            sample_points, road_map = prm_graph(startPose, endPose, self.obstaclesListCell, ROBOT_RADIUS)
+            sample_points, road_map = prm_graph(startPose, endPose, self.obstaclesListCell, ROBOT_RADIUS, m_utilities=self.m_utilities)
 
             path_ = search_PRM(sample_points, road_map, startPose, endPose)
-
+            # print(f"the path is {path_} \n")
             end_time = time.time()
-
             print(f"the time took for prm + a_star calculation was {end_time - start_time}")
 
         elif type == ASTAR_PLANNER: # This is the same planner you should have implemented for Lab4
@@ -88,9 +89,15 @@ class planner:
     
 
 if __name__=="__main__":
+    # rclpy.init()
 
     m_utilities=mapManipulator()
     
     map_likelihood=m_utilities.make_likelihood_field()
     
     # You can test your code here...
+    # p = planner(PRM_PLANNER)
+    # p.initTrajectoryPlanner()
+    # startPose = [-3, 3]
+    # endPose = [5, 3]
+    # p.plan(startPose, endPose)

@@ -226,8 +226,8 @@ class mapManipulator(Node):
         grid.info.origin.orientation.w = np.cos(-np.pi/4)
         grid.info.origin.orientation.z = np.sin(-np.pi/4)
         offset = -self.height*self.getResolution()
-        print( offset )
-        print(self.getOrigin()[1])
+        # print( offset )
+        # print(self.getOrigin()[1])
 
 
         grid.info.origin.position.x, grid.info.origin.position.y = self.getOrigin()[0], +self.getOrigin()[1] - offset

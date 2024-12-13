@@ -10,7 +10,7 @@ PID=3
 class PID_ctrl:
     
     
-    def __init__(self, type_, kp=1.2,kv=0.8,ki=0.2, history_length=3, filename_="errors.csv"):
+    def __init__(self, type_, kp=1.2,kv=0.8,ki=0.2, history_length=3, filename_="Log_Files/errors.csv"):
         
         
         self.history_length=history_length

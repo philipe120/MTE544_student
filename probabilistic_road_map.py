@@ -30,9 +30,9 @@ from scipy.spatial import KDTree
 # from mapUtilities import *
 
 # Parameters of PRM
-N_SAMPLE = 300  # number of sample_points
-N_KNN = 6  # number of edge from one sampled point (one node)
-MAX_EDGE_LEN = 12  # Maximum edge length, in [m]
+N_SAMPLE = 800  # number of sample_points
+N_KNN = 10  # number of edge from one sampled point (one node)
+MAX_EDGE_LEN = 3  # Maximum edge length, in [m]
 
 # Original Parameters of PRM
 # N_SAMPLE = 800  # number of sample_points
@@ -122,7 +122,7 @@ def prm_graph(start, goal, obstacles_list, robot_radius, *, rng=None, m_utilitie
         plt.grid(True)
         plt.axis("equal")
         plt.title("Probabilistic Road Map")
-        plt.show()
+        plt.show(block=False)
     
     # Return generated roadmap, if using a costmap, return also the list of indices of the sample points
     if use_map:
@@ -166,8 +166,8 @@ def generate_sample_points(start, goal, rr, obstacles_list, obstacle_kd_tree, rn
 
     while len(sample_x) <= N_SAMPLE:
         # Random Sampling
-        tx = int(rng.uniform(min(ox), max(ox)))
-        ty = int(rng.uniform(min(oy), max(oy)))
+        tx = rng.integers(min(ox), max(ox))
+        ty = rng.integers(min(oy), max(oy))
 
         # Check if the sample is in collision with an obstacle
         if is_collision(tx, ty, -1, -1, rr, obstacle_kd_tree, MAX_EDGE_LEN):
@@ -208,23 +208,23 @@ def is_collision(sx, sy, gx, gy, rr, obstacle_kd_tree, max_edge_len, dist_betwee
     
     # Case for determining if a single sample point is in collision with an obstacle, accounting for the radius of the robot
     # The gx, and gy values are set to -1 to signify that this is for a single sample point case
+    robot_diameter = rr * 2
+    
     if (gx < 0 and gy < 0):
-        if obstacle_kd_tree.query_ball_point([sx, sy], r=rr):
+        if obstacle_kd_tree.query_ball_point([sx, sy], r=robot_diameter):
             return True
     else: 
         # Case for determining if an edge between two sample points is in collision with an obstacle
 
-        # Robot diameter
-        robot_diameter = rr * 2
-
         # The following code takes equally spaced samples along the hypotenuse formed between two nodes
         # The intention of this code is to check if there are any obstacles along the edge at robot diameter spaced intervals
-        x_coord_along_edge = np.linspace(sx, gx, int(dist_between_points/robot_diameter))
-        y_coord_along_edge = np.linspace(sy, gy, int(dist_between_points/robot_diameter))
+        x_coord_along_edge = np.linspace(sx, gx, math.ceil(dist_between_points / rr))
+        y_coord_along_edge = np.linspace(sy, gy, math.ceil(dist_between_points / rr))
 
         for x_coord, y_coord in zip(x_coord_along_edge, y_coord_along_edge):
             # If there is a possible collision with an obstacle, while also accounting for the radius of the robot, return true
-            if obstacle_kd_tree.query_ball_point([x_coord, y_coord], r=rr):
+            if len(obstacle_kd_tree.query_ball_point([x_coord, y_coord], r=robot_diameter)) > 0:
+                # print(f"Collision detected at {x_coord}, {y_coord} \n")
                 return True
 
     return False  # No collision
@@ -313,7 +313,7 @@ def main(rng=None):
     sy = 10.0  # [m]
     gx = 50.0  # [m]
     gy = 50.0  # [m]
-    robot_size = 5 # [m]
+    robot_size = 1 # [m]
 
     ox = []
     oy = []

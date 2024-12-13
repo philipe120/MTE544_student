@@ -47,6 +47,16 @@ def return_path(current_node,maze):
 
     return path
 
+def return_path_prm(current_node, points):
+    path = []
+    current = current_node
+    while current is not None:
+        path.append(points[current.position])
+        current = current.parent
+    # Return reversed path as we need to show from start to end path
+    path = path[::-1]
+    return path
+
 # Default search on a grid maze (implementation of Lab4)
 def search(maze, start, end, scale_factor):
     """
@@ -235,19 +245,19 @@ def search_PRM(points, prm, start, end):
         outer_iterations += 1    
         
         # Get the current node
-        current_node_position = (-999, -999)
-        current_node = Node(None, tuple(current_node_position))
+        current_f_score = None
+        current_node = None
 
-        for i_position in yet_to_visit_dict.keys():
-            i_node = yet_to_visit_dict[i_position] ## first is g, second is f
-            if i_node.f < current_node.f: ## compare the f
-                current_node = i_node
-                
+        for position, node in yet_to_visit_dict.items():
+            if current_f_score is None or node.f < current_f_score:
+                current_f_score = node.f
+                current_node = node
+
         # if we hit this point return the path such as it may be no solution or 
         # computation cost is too high
         if outer_iterations > max_iterations:
             print ("giving up on pathfinding too many iterations")
-            return path_points
+            return return_path_prm(current_node, points)
 
         # Pop current node out off yet_to_visit list, add to visited list
         yet_to_visit_dict.pop(current_node.position)
@@ -255,8 +265,8 @@ def search_PRM(points, prm, start, end):
 
         # test if goal is reached or not, if yes then return the path
         if current_node == end_node:
-            print ("Goal reached")
-            return path_points
+            print("Goal reached \n")
+            return return_path_prm(current_node, points)
 
         # Generate children from all adjacent squares
         children = []
@@ -293,5 +303,3 @@ def search_PRM(points, prm, start, end):
 
             # Add the child to the yet_to_visit list
             yet_to_visit_dict[child.position] = child
-    
-    return path_points
